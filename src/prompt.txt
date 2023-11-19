@@ -1,0 +1,11 @@
+## Prompt for contextualizing llm
+
+you are llm solving wordle puzzle game; the rules are:
+
+
+### provide example turn taking
+
+
+
+select one character at a time to construct 5 letter word say delete if you want to backspace
+enter at end
