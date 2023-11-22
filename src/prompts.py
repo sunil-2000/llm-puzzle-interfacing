@@ -1,134 +1,32 @@
-prompt_basic = """
-Your job is to solve a Wordle, which is a puzzle in which you have to guess the hidden five letter word in six or fewer attempts.
-In each attempt, you will receive an image representing the state of the game and supply a valid five-letter word. 
-Each letter has a colored background tile that will change color upon submitting your guess to let you know whether that letter is correct or not. 
-If the tile is green, that letter is in the word and is in the correct position. If the tile is yellow, that letter is in the word but is in the wrong position. 
-Finally, if the tile is gray, that letter is not in the word. You will be shown this response in the next image you receive to inform your next guess. 
-In order to win, you have to guess the correct word within six attempts. The goal is to guess the correct word in the least amount of guesses.
+wordle_prompt = """
+You are playing a game of wordle. You will be provided an image of the current wordle state,
+and will make an 5-letter word attempt to guess the correct word.
 
-Here is an example of the gameplay, with five colored tiles below each word guessed representing the correctness of each letter, as specified above:
-⬛️ = not guessed yet
-🟨 = in word but in wrong position
-🟩 = in word and in correct position
-⬜ = not in word
+Let "X" = letter not in word, "O" = letter in word but not in correct position,
+"V" = letter in word and in correct position.
 
-guess 0: ALIEN
-⬜⬜🟩⬜🟨
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
+Let's say that you are given an image where the first row is
+"XOXXV" and the word guess is "HELLO". 
 
-guess 1: COUGH
-⬜⬜🟩⬜🟨
-⬜⬜⬜⬜🟨
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
+This indicates that "H" and "L" is not in the word because these characters
+are in positions corresponding to "X". "E" is in the word, but not at position 1. "O"
+is in the word and at the correct position (position 4).
 
-guess 2: DRINK
-⬜⬜🟩⬜🟨
-⬜⬜⬜⬜🟨
-⬜⬜🟩🟩🟩
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
+A good guess might be "CREDO" because it has "O" in the correct position, and "E" in a different position.
 
-guess 3: CHINK
-⬜⬜🟩⬜🟨
-⬜⬜⬜⬜🟨
-⬜⬜🟩🟩🟩
-🟨🟩🟩🟩🟩
-⬛️⬛️⬛️⬛️⬛️
+Now you will play wordle, but will be a given an image of the board. The same rules can be applied
+if we let "X" map to a greyed out character, "O" map to a yellow highlighted character, 
+"V" map to a green highlighted character.
 
-guess 4:THINK
-⬜⬜🟩⬜🟨
-⬜⬜⬜⬜🟨
-⬜⬜🟩🟩🟩
-🟨🟩🟩🟩🟩
-🟩🟩🟩🟩🟩
+To make a guess peform the following reasoning on the given image of a wordle board. 
+This will require the following reasoning:
+1. Analyze the board and recognize which characters are not in the word ("X"), which characters
+are in the word but incorrect position ("O"), and which characters are in the correct position ("V").
+2. Make an educated guess such that the guessed word contains characters that are already in the 
+correct position ("V"), contains characters that are in the word but at different positions from previous
+attempts ("O"), and does not contain characters that are not in the word ("X").
 
-In this example, it took five guesses to get the correct word “THINK”.
-
-Example game (where the game state is derived from an image):
-
-game state: <image>
-ALIEN
-
-game state: <image>
-COUGH
-
-game state: <image>
-DRINK
-
-game state: <image>
-CHINK
-
-game state: <image>
-THINK
-
-You will be given a picture of an image reflecting the wordle game state and will respond with only 5 letter words.
+Perform this reasoning for each image, but only respond with a 5 letter word. 
 """
 
-prompt0 = """
-Here is an example of the gameplay, with five colored tiles below each word guessed representing the correctness of each letter, as specified above:
-⬛️ = not guessed yet
-🟨 = in word but in wrong position
-🟩 = in word and in correct position
-⬜ = not in word
-
-guess 0: ALIEN
-⬜⬜🟩⬜🟨
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-
-guess 1: COUGH
-⬜⬜🟩⬜🟨
-⬜⬜⬜⬜🟨
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-
-guess 2: DRINK
-⬜⬜🟩⬜🟨
-⬜⬜⬜⬜🟨
-⬜⬜🟩🟩🟩
-⬛️⬛️⬛️⬛️⬛️
-⬛️⬛️⬛️⬛️⬛️
-
-guess 3: CHINK
-⬜⬜🟩⬜🟨
-⬜⬜⬜⬜🟨
-⬜⬜🟩🟩🟩
-🟨🟩🟩🟩🟩
-⬛️⬛️⬛️⬛️⬛️
-
-guess 4:THINK
-⬜⬜🟩⬜🟨
-⬜⬜⬜⬜🟨
-⬜⬜🟩🟩🟩
-🟨🟩🟩🟩🟩
-🟩🟩🟩🟩🟩
-
-In this example, it took five guesses to get the correct word “THINK”.
-
-Example game (where the game state is derived from an image):
-
-game state: <image>
-ALIEN
-
-game state: <image>
-COUGH
-
-game state: <image>
-DRINK
-
-game state: <image>
-CHINK
-
-game state: <image>
-THINK
-
-You will be given a picture of an image reflecting the wordle game state and will respond with only 5 letter words.
-"""
+verification_prompt = """"""
