@@ -58,4 +58,62 @@ If the image contains an empty wordle board, make a 5 letter word guess.
 Perform this reasoning for each image, but only respond with a 5 letter word. 
 """
 
-verification_prompt = """"""
+
+def wordle_prompt_gpt4(wordle_board: str) -> str:
+    return f"""
+  You are playing a version of the game wordle. The goal is to guess
+  the correct 5 letter word. You will be given a 5 x 6 board, where each row 
+  represents either a previously guessed word or a blank row. 
+  
+  If a row is a previously guessed word, each cell is defined as tuple, (letter, letter state) 
+  where letter is the letter in that word at the position, and letter state can 
+  be one of three values: "X", "O", "V".
+  "X" means the letter is not in the word, "O" means the letter is in the word but not at the correct position,
+  "V" means the letter is in the word and at the correct position. A letter can occur multiple times in a word.
+
+  If the row is a blank row, the cell will be empty and indicated by (-,-).
+  
+  Example:
+  [[('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  guess: "HELLO"
+
+  [[('H', 'X'), ('E', 'O'), ('L', 'X'), ('L', 'X'), ('O', 'X')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  # we know that "E" is in the word but not at position 1; "H", "L", "O" are not in the word.
+  guess: "NUKES"
+  
+  [[('H', 'X'), ('E', 'O'), ('L', 'X'), ('L', 'X'), ('O', 'X')],
+  [('N', 'O'), ('U', 'V'), ('K', 'X'), ('E', 'V'), ('S', 'X')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  # we know that "E" is in the word and at position 3, "U" is in the word and at position 1
+    ; "N" is in the word but not at position 0; "H", "L", "O", "K", "S" are not in the word.
+  guess: "QUEEN"
+
+  [[('H', 'X'), ('E', 'O'), ('L', 'X'), ('L', 'X'), ('O', 'X')],
+  [('N', 'O'), ('U', 'V'), ('K', 'X'), ('E', 'V'), ('S', 'X')],
+  [('Q', 'V'), ('U', 'V'), ('E', 'V'), ('E', 'V'), ('N', 'V')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  QUEEN was the correct word!
+
+  Your task is to perform this reasoning on a given wordle game state to make the best 5-letter word guess.
+  our next guess should not contain letters that are not in the word ("X"). Only respond with a valid english 5 letter word.
+
+  Here is the current wordle board:
+  {wordle_board}
+
+  guess:
+  """

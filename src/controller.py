@@ -6,6 +6,8 @@ from selenium import webdriver
 from pprint import pprint
 from selenium.webdriver.common.by import By
 
+from typing import List, Tuple
+
 
 class WordleController:
     def __init__(self) -> None:
@@ -32,11 +34,10 @@ class WordleController:
         self.driver.find_element(By.CLASS_NAME, "Welcome-module_button__ZG0Zh").click()
         self.driver.find_element(By.CLASS_NAME, "Modal-module_closeIcon__TcEKb").click()
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        print("initializing complete")
-        time.sleep(2)
         # init keyboard controller
         self._grab_buttons()
         self.total_turns = 0
+        print("initializing complete")
 
     def _grab_buttons(self) -> None:
         keys = self.driver.find_elements(
@@ -54,3 +55,33 @@ class WordleController:
             os.path.abspath(f"{self.image_dir}/turn-{self.total_turns}.png")
         )
         self.total_turns += 1
+
+    def get_wordle_board(self) -> List[List[Tuple[str, str]]]:
+        """
+        extract wordle board from page
+        """
+        rows = self.driver.find_elements(By.CLASS_NAME, "Row-module_row__pwpBq")
+        data_state_map = {"correct": "V", "present": "O", "absent": "X", "empty": "-"}
+        extracted_board = [
+            [
+                (
+                    char.text if char.text else "-",
+                    data_state_map[char.get_attribute("data-state")],
+                )
+                for char in row.find_elements(By.CLASS_NAME, "Tile-module_tile__UWEHN")
+            ]
+            for row in rows
+        ]
+        return extracted_board
+
+    def check_wordle_state(self) -> bool:
+        """
+        check if wordle is over
+        """
+        return (
+            True
+            if self.driver.find_elements(
+                By.CLASS_NAME, "Stats-module_statsContainer__g23s0"
+            )
+            else False
+        )

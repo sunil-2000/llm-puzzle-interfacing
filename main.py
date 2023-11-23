@@ -3,6 +3,6 @@ from src.controller import WordleController
 
 
 
-wc = WordleController()
-
-print(wc.get_wordle_board())
+wa = wordleAgent()
+while True:
+  wa.guess()
