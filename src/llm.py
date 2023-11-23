@@ -2,57 +2,41 @@
 import os
 import requests
 from src.controller import WordleController
-from src.util import encode_image
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-from src.prompts import wordle_prompt
+from src.util import gpt4_v_wordle_payload
+from src.prompts import wordle_prompt_gpt4_v as wordle_prompt
 
-class llmAgent(WordleController):
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+class wordleAgent(WordleController):
   """
   wordle-LLM agent
   """
-  def __init__(self) -> None:
+  def __init__(self, vision:bool=False) -> None:
+    self.vision = vision
     super().__init__()
-
-  def response(self, prompt: str, image_path: str) -> str:
-    """
-    prompt: str
-    image: str
-    """
-    encoded_image = encode_image(image_path)
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-    }
-    payload = {
-        "model": "gpt-4-vision-preview",
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{encoded_image}"
-                        },
-                    },
-                ],
-            }
-        ],
-        "max_tokens": 20,  # change later
-    }
-    response = requests.post(
-        "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
-    )
-    return response.json()["choices"][0]["text"].strip()
   
-  def interpret(self) -> None:
+
+  def turn(self) -> None:
     """
-    interpret image 
+    execute one turn of wordle (ie. submit 1 5-letter-word guess)
     """
+    if self.vision:
+      self.vision_guess()
+    else:
+      self.guess()
     pass
   
-  def turn(self) -> None:
+  def vision_response(self, prompt: str, image_path: str) -> str:
+    """
+    send image of wordle board + prompt to gpt-4-vision-preview
+    """
+    request = gpt4_v_wordle_payload(image_path, prompt, OPENAI_API_KEY)
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions", headers=request["headers"], json=request["payload"]
+    )
+    return response.json()["choices"][0]["message"]["content"].strip()
+
+  def vision_guess(self) -> None:
     """
     1. screenshot page
     2. send page + prompt to llm
@@ -62,9 +46,26 @@ class llmAgent(WordleController):
     print("capturing")
     self.capture()
     image_path = (f"{self.image_dir}/turn-{self.total_turns-1}.png")
-    llm_decisions = list(self.response(wordle_prompt, image_path).strip())
+    llm_decisions = list(self.vision_response(wordle_prompt, image_path).strip())
     print(llm_decisions)
-    # upload word
     [self.keyboard(char.lower()) for char in llm_decisions]
     self.keyboard("enter")
     print("submitted LLM response")
+
+  def guess(self) -> None:
+    """
+    1. extract current state of game
+    2. send state to llm
+    3. get action back and execute
+    4. repeat until game is over
+    """
+    pass
+  def extract_state(self) -> None:
+    pass
+
+  def action(self) -> bool:
+    """
+    Have llm perform action on game, return current state of game
+    * convert turn method into this function (abstraction over any game)
+    """
+    pass

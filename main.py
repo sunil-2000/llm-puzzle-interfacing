@@ -1,6 +1,8 @@
-from src.llm import llmAgent
+from src.llm import wordleAgent
+from src.controller import WordleController
 
-agent = llmAgent()
 
-while True:
-  agent.turn()
+
+wc = WordleController()
+
+print(wc.get_wordle_board())

@@ -3,7 +3,9 @@ import os
 import time
 from datetime import datetime
 from selenium import webdriver
+from pprint import pprint
 from selenium.webdriver.common.by import By
+
 
 class WordleController:
     def __init__(self) -> None:
@@ -37,15 +39,17 @@ class WordleController:
         self.total_turns = 0
 
     def _grab_buttons(self) -> None:
-        keys = self.driver.find_elements(By.CLASS_NAME, "Key-module_key__kchQI") # wordle specific 
-        self.keyboard = {key.get_attribute("data-key"): key for key in keys}
-        self.keyboard["enter"] = self.keyboard["↵"]
-        self.keyboard.pop("↵")
+        keys = self.driver.find_elements(
+            By.CLASS_NAME, "Key-module_key__kchQI"
+        )  # wordle specific
+        self.keyboard_map = {key.get_attribute("data-key"): key for key in keys}
+        self.keyboard_map["enter"] = self.keyboard_map["↵"]
+        self.keyboard_map.pop("↵")
 
     def keyboard(self, character: str) -> None:
-        self.keyboard[character].click()
+        self.keyboard_map[character].click()
 
-    def capture(self):
+    def capture_screen(self) -> None:
         self.driver.save_screenshot(
             os.path.abspath(f"{self.image_dir}/turn-{self.total_turns}.png")
         )
