@@ -18,6 +18,8 @@ class wordleAgent(WordleController):
 
     def __init__(self, vision: bool = False) -> None:
         self.vision = vision
+        self.board_sequence = []
+        self.guesses = []
         super().__init__()
 
     def turn(self) -> None:
@@ -77,9 +79,18 @@ class wordleAgent(WordleController):
             print("game over")
             self.driver.close()
             return
+
         wordle_board = self.get_wordle_board()
-        pprint(wordle_board)
-        guess = self.response(wordle_prompt_gpt4(wordle_board)).strip().strip('"')
+        self.board_sequence.append(wordle_board)
+        prompt = wordle_prompt_gpt4(self.board_sequence, self.guesses)
+        print(prompt)
+        guess = (
+            self.response(prompt)
+            .strip()
+            .strip('"')
+        )
+        print(self.guesses)
+        self.guesses.append(guess)
         self._submit_guess(guess)
         time.sleep(3)
 

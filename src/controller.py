@@ -61,7 +61,13 @@ class WordleController:
         extract wordle board from page
         """
         rows = self.driver.find_elements(By.CLASS_NAME, "Row-module_row__pwpBq")
-        data_state_map = {"correct": "V", "present": "O", "absent": "X", "empty": "-"}
+        data_state_map = {
+            "correct": "V",
+            "present": "O",
+            "absent": "X",
+            "empty": "-",
+            "tbd": "-",
+        }
         extracted_board = [
             [
                 (

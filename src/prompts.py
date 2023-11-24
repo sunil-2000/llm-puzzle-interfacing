@@ -1,3 +1,5 @@
+from typing import List
+
 wordle_prompt_gpt4_v = """
 You are playing a game of wordle. You will be provided an image of the current wordle state,
 and will make an 5-letter word attempt to guess the correct word.
@@ -59,11 +61,9 @@ Perform this reasoning for each image, but only respond with a 5 letter word.
 """
 
 
-def wordle_prompt_gpt4(wordle_board: str) -> str:
-    return f"""
-  You are playing a version of the game wordle. The goal is to guess
-  the correct 5 letter word. You will be given a 5 x 6 board, where each row 
-  represents either a previously guessed word or a blank row. 
+def wordle_prompt_gpt4(wordle_boards: List[str], guesses: List[str]) -> str:
+  return """
+  You are playing wordle. The goal is to guess the correct 5 letter english word. 
   
   If a row is a previously guessed word, each cell is defined as tuple, (letter, letter state) 
   where letter is the letter in that word at the position, and letter state can 
@@ -73,7 +73,7 @@ def wordle_prompt_gpt4(wordle_board: str) -> str:
 
   If the row is a blank row, the cell will be empty and indicated by (-,-).
   
-  Example:
+  Example 1:
   [[('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
@@ -81,14 +81,13 @@ def wordle_prompt_gpt4(wordle_board: str) -> str:
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
   guess: "HELLO"
-
+  
   [[('H', 'X'), ('E', 'O'), ('L', 'X'), ('L', 'X'), ('O', 'X')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
-  # we know that "E" is in the word but not at position 1; "H", "L", "O" are not in the word.
   guess: "NUKES"
   
   [[('H', 'X'), ('E', 'O'), ('L', 'X'), ('L', 'X'), ('O', 'X')],
@@ -97,8 +96,6 @@ def wordle_prompt_gpt4(wordle_board: str) -> str:
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
-  # we know that "E" is in the word and at position 3, "U" is in the word and at position 1
-    ; "N" is in the word but not at position 0; "H", "L", "O", "K", "S" are not in the word.
   guess: "QUEEN"
 
   [[('H', 'X'), ('E', 'O'), ('L', 'X'), ('L', 'X'), ('O', 'X')],
@@ -109,11 +106,74 @@ def wordle_prompt_gpt4(wordle_board: str) -> str:
   [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
   QUEEN was the correct word!
 
+  Example 2:
+  [[('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  guess: "STRAP"
+
+  [[('S', 'X'), ('T', 'X'), ('R', 'X'), ('A', 'V'), ('P', 'X')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  guess: "GLEAM"
+  
+  [[('S', 'X'), ('T', 'X'), ('R', 'X'), ('A', 'V'), ('P', 'X')],
+  [('G', 'O'), ('L', 'O'), ('E', 'X'), ('A', 'V'), ('M', 'X')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  guess: "LOCAL"
+
+  [[('S', 'X'), ('T', 'X'), ('R', 'X'), ('A', 'V'), ('P', 'X')],
+  [('G', 'O'), ('L', 'O'), ('E', 'X'), ('A', 'V'), ('M', 'X')],
+  [('L', 'X'), ('O', 'X'), ('C', 'X'), ('A', 'V'), ('L', 'V')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  guess: "BANAL"
+
+  [[('S', 'X'), ('T', 'X'), ('R', 'X'), ('A', 'V'), ('P', 'X')],
+  [('G', 'O'), ('L', 'O'), ('E', 'X'), ('A', 'V'), ('M', 'X')],
+  [('L', 'X'), ('O', 'X'), ('C', 'X'), ('A', 'V'), ('L', 'V')],
+  [('B', 'V'), ('A', 'V'), ('N', 'V'), ('A', 'V'), ('L', 'V')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')],
+  [('-', '-'), ('-', '-'), ('-', '-'), ('-', '-'), ('-', '-')]]
+  BANAL was the correct word!
+
   Your task is to perform this reasoning on a given wordle game state to make the best 5-letter word guess.
-  our next guess should not contain letters that are not in the word ("X"). Only respond with a valid english 5 letter word.
+  Only respond with a valid 5 letter english word.
 
-  Here is the current wordle board:
-  {wordle_board}
+  Example 3:
+  {previous_examples}
 
-  guess:
-  """
+  {next_state}
+  """.format(
+        previous_examples="\n".join(
+            [
+                extract_example(wordle_board, guess)
+                for wordle_board, guess in zip(wordle_boards[:-1], guesses)
+            ]
+        ),
+        next_state=extract_example(wordle_boards[-1])
+    )
+
+def extract_example(wordle_board, guess="") -> str:
+    res = (
+        "["
+        + "\n".join(
+            ["[" + ", ".join([str(char) for char in row]) + "]" for row in wordle_board]
+        )
+        + "]"
+    )
+
+    res += '\nguess: '
+    if guess: res += "\""+guess+"\""
+    return res
+
