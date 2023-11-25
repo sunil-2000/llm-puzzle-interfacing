@@ -62,7 +62,7 @@ Perform this reasoning for each image, but only respond with a 5 letter word.
 
 
 def wordle_prompt_gpt4(wordle_boards: List[str], guesses: List[str]) -> str:
-  return """
+    return """
   You are playing wordle. The goal is to guess the correct 5 letter english word. 
   
   If a row is a previously guessed word, each cell is defined as tuple, (letter, letter state) 
@@ -161,8 +161,9 @@ def wordle_prompt_gpt4(wordle_boards: List[str], guesses: List[str]) -> str:
                 for wordle_board, guess in zip(wordle_boards[:-1], guesses)
             ]
         ),
-        next_state=extract_example(wordle_boards[-1])
+        next_state=extract_example(wordle_boards[-1]),
     )
+
 
 def extract_example(wordle_board, guess="") -> str:
     res = (
@@ -173,7 +174,7 @@ def extract_example(wordle_board, guess="") -> str:
         + "]"
     )
 
-    res += '\nguess: '
-    if guess: res += "\""+guess+"\""
+    res += "\nguess: "
+    if guess:
+        res += '"' + guess + '"'
     return res
-
