@@ -3,5 +3,8 @@
 
 ## interesting observations:
 - gpt-4-vision seemingly cannot play wordle; does not make connections between
-each row when making new guess <-- (better prompting?)
+each row when making new guess <-- (better prompting?) <- need way to easily map char to token?
+
+todo:
+* stronger examples in prompts
 
