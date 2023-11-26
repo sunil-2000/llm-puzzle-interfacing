@@ -1,8 +1,4 @@
-from src.llm import wordleAgent
-from src.controller import WordleController
+from src.connections_controller import ConnectionController
 
-
-
-wa = wordleAgent()
-while True:
-  wa.guess()
+cc = ConnectionController()
+cc.turn()

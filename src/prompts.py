@@ -1,5 +1,7 @@
 from typing import List
 
+# **************************Wordle**********************************************
+
 wordle_prompt_gpt4_v = """
 You are playing a game of wordle. You will be provided an image of the current wordle state,
 and will make an 5-letter word attempt to guess the correct word.
@@ -178,3 +180,34 @@ def extract_example(wordle_board, guess="") -> str:
     if guess:
         res += '"' + guess + '"'
     return res
+
+
+# **************************Connections*****************************************
+
+
+def connections_prompt(words: List[str]) -> str:
+    return f"""
+    You are playing the popular game "connections". You will be given a multiple of 4
+    words up to 16 words, and your task is to find a grouping of 4 words that share
+    something in common. Do not submit previous groupings.
+
+    Example 1:
+    words: [JOHN, CUB, STAR, SILVER, KNEE, THRONE, JOEY, JELLY, CALF, ANKLE, CRAY, HEAD, SHIN, CAN, KID, THIGH]
+    previous_attempts: []
+    group: [ANKLE, SHIN, KNEE, THIGH]
+
+    Example 2:
+    words: [JOHN, CUB, STAR, SILVER, THRONE, JOEY, JELLY, CALF, CRAY, HEAD, CAN, KID]
+    previous_attempts: []
+    group: [CALF, CUB, JOEY, KID]
+
+    Example 3:
+    words: [CHAD, GEORGIA, JORDAN, TOGO, FISH, GOAT, SCALES, TWINS]
+    previous_attempts: []
+    group: [FISH, GOAT, SCALES, TWINS]
+
+    Example 4:
+    words: {"["+", ".join(words)+"]"}
+    previous_attempts: []
+    group: 
+    """

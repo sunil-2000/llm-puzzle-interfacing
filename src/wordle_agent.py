@@ -89,13 +89,6 @@ class wordleAgent(WordleController):
         self._submit_guess(guess)
         time.sleep(3)
 
-    def action(self) -> bool:
-        """
-        Have llm perform action on game, return current state of game
-        * convert turn method into this function (abstraction over any game)
-        """
-        pass
-
     def _submit_guess(self, guess: str) -> None:
         """
         submit guess to wordle
