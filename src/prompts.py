@@ -185,11 +185,12 @@ def extract_example(wordle_board, guess="") -> str:
 # **************************Connections*****************************************
 
 
-def connections_prompt(words: List[str]) -> str:
-    return f"""
+def connections_prompt(words: List[str], previous_attempts: List[List]) -> str:
+    return """
     You are playing the popular game "connections". You will be given a multiple of 4
     words up to 16 words, and your task is to find a grouping of 4 words that share
-    something in common. Do not submit previous groupings.
+    something in common. Previous groupings are previously submitted groupings that are wrong.
+    You can only submit a group with words that are contained in the words array.
 
     Example 1:
     words: [JOHN, CUB, STAR, SILVER, KNEE, THRONE, JOEY, JELLY, CALF, ANKLE, CRAY, HEAD, SHIN, CAN, KID, THIGH]
@@ -198,16 +199,23 @@ def connections_prompt(words: List[str]) -> str:
 
     Example 2:
     words: [JOHN, CUB, STAR, SILVER, THRONE, JOEY, JELLY, CALF, CRAY, HEAD, CAN, KID]
-    previous_attempts: []
+    previous_attempts: [[JOHN, CUB, STAR, JELLY], [JELLY, CALF, CRAY, HEAD]]
     group: [CALF, CUB, JOEY, KID]
 
     Example 3:
     words: [CHAD, GEORGIA, JORDAN, TOGO, FISH, GOAT, SCALES, TWINS]
-    previous_attempts: []
+    previous_attempts: [[CHAD, TOGO, FISH, GOAT]]
     group: [FISH, GOAT, SCALES, TWINS]
 
     Example 4:
-    words: {"["+", ".join(words)+"]"}
-    previous_attempts: []
+    words: {words}
+    previous_attempts: {previous_attempts}
     group: 
-    """
+    """.format(
+        words="[" + ", ".join(words) + "]",
+        previous_attempts="["
+        + ", ".join(["[" + ", ".join(attempt) + "]" for attempt in previous_attempts])
+        + "]"
+        if previous_attempts
+        else "[]",
+    )
