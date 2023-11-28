@@ -1,8 +1,10 @@
-from src.llm import wordleAgent
-from src.controller import WordleController
+from src.connections_controller import ConnectionController
 
+cc = ConnectionController()
+state = False 
 
+while not state:
+  print(state)
+  state = cc.turn()
 
-wa = wordleAgent()
-while True:
-  wa.guess()
+print(f"solved in {cc.total_turns} turns")

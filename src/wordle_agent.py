@@ -2,11 +2,10 @@
 import os
 import time
 import requests
-from src.controller import WordleController
+from wordle_controller import WordleController
 from src.util import gpt4_v_wordle_payload, gpt4_wordle_payload
 from src.prompts import wordle_prompt_gpt4_v, wordle_prompt_gpt4
 
-from pprint import pprint
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -84,22 +83,11 @@ class wordleAgent(WordleController):
         self.board_sequence.append(wordle_board)
         prompt = wordle_prompt_gpt4(self.board_sequence, self.guesses)
         print(prompt)
-        guess = (
-            self.response(prompt)
-            .strip()
-            .strip('"')
-        )
+        guess = self.response(prompt).strip().strip('"')
         print(self.guesses)
         self.guesses.append(guess)
         self._submit_guess(guess)
         time.sleep(3)
-
-    def action(self) -> bool:
-        """
-        Have llm perform action on game, return current state of game
-        * convert turn method into this function (abstraction over any game)
-        """
-        pass
 
     def _submit_guess(self, guess: str) -> None:
         """

@@ -1,5 +1,7 @@
 from typing import List
 
+# **************************Wordle**********************************************
+
 wordle_prompt_gpt4_v = """
 You are playing a game of wordle. You will be provided an image of the current wordle state,
 and will make an 5-letter word attempt to guess the correct word.
@@ -62,7 +64,7 @@ Perform this reasoning for each image, but only respond with a 5 letter word.
 
 
 def wordle_prompt_gpt4(wordle_boards: List[str], guesses: List[str]) -> str:
-  return """
+    return """
   You are playing wordle. The goal is to guess the correct 5 letter english word. 
   
   If a row is a previously guessed word, each cell is defined as tuple, (letter, letter state) 
@@ -161,8 +163,9 @@ def wordle_prompt_gpt4(wordle_boards: List[str], guesses: List[str]) -> str:
                 for wordle_board, guess in zip(wordle_boards[:-1], guesses)
             ]
         ),
-        next_state=extract_example(wordle_boards[-1])
+        next_state=extract_example(wordle_boards[-1]),
     )
+
 
 def extract_example(wordle_board, guess="") -> str:
     res = (
@@ -173,7 +176,46 @@ def extract_example(wordle_board, guess="") -> str:
         + "]"
     )
 
-    res += '\nguess: '
-    if guess: res += "\""+guess+"\""
+    res += "\nguess: "
+    if guess:
+        res += '"' + guess + '"'
     return res
 
+
+# **************************Connections*****************************************
+
+
+def connections_prompt(words: List[str], previous_attempts: List[List]) -> str:
+    return """
+    You are playing the popular game "connections". You will be given a multiple of 4
+    words up to 16 words, and your task is to find a grouping of 4 words that share
+    something in common. Previous groupings are previously submitted groupings that are wrong.
+    You can only submit a group with words that are contained in the words array.
+
+    Example 1:
+    words: [JOHN, CUB, STAR, SILVER, KNEE, THRONE, JOEY, JELLY, CALF, ANKLE, CRAY, HEAD, SHIN, CAN, KID, THIGH]
+    previous_attempts: []
+    group: [ANKLE, SHIN, KNEE, THIGH]
+
+    Example 2:
+    words: [JOHN, CUB, STAR, SILVER, THRONE, JOEY, JELLY, CALF, CRAY, HEAD, CAN, KID]
+    previous_attempts: [[JOHN, CUB, STAR, JELLY], [JELLY, CALF, CRAY, HEAD]]
+    group: [CALF, CUB, JOEY, KID]
+
+    Example 3:
+    words: [CHAD, GEORGIA, JORDAN, TOGO, FISH, GOAT, SCALES, TWINS]
+    previous_attempts: [[CHAD, TOGO, FISH, GOAT]]
+    group: [FISH, GOAT, SCALES, TWINS]
+
+    Example 4:
+    words: {words}
+    previous_attempts: {previous_attempts}
+    group: 
+    """.format(
+        words="[" + ", ".join(words) + "]",
+        previous_attempts="["
+        + ", ".join(["[" + ", ".join(attempt) + "]" for attempt in previous_attempts])
+        + "]"
+        if previous_attempts
+        else "[]",
+    )
