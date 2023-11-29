@@ -13,4 +13,5 @@ todo:
 
 ### Examples
 
-![](connections-example.mov)
+https://github.com/sunil-2000/llm-puzzle-interfacing/assets/59806352/a8f46963-d80b-4a32-84f3-d6e8f901fb0a
+
