@@ -1,0 +1,7 @@
+words,correct,turn
+"['BEDROOM', 'KITCHEN', 'DEN', 'STUDY']",True,0
+"['KEY', 'PACK', 'BAG', 'BAR']",False,1
+"['ATOLL', 'ISLAND', 'KEY', 'BAR']",True,2
+"['PACK', 'CRAM', 'STUFF', 'BAG']",False,3
+"['SPROUT', 'DIP', 'JAM', 'BAG']",False,4
+"['PACK', 'CRAM', 'JAM', 'STUFF']",True,5
