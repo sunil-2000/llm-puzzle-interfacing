@@ -19,6 +19,7 @@ class ConnectionController(BrowserController):
         self.all_guesses = []
         self.previous_guesses = []
         self.total_turns = 0
+        self.attempts = 4
 
     def _get_word_html_elements(self) -> List[str]:
         # call after each submission because DOM refreshes each submit
@@ -34,6 +35,7 @@ class ConnectionController(BrowserController):
 
     def turn(self) -> bool:
         print(f"turn: {self.total_turns}")
+
         all_words = self.word_to_buttons.keys()
         correct_groups = self._get_correct_groups()
         words = list(set(all_words) - set(correct_groups))
@@ -43,6 +45,7 @@ class ConnectionController(BrowserController):
             return True
 
         prompt = connections_prompt(words, self.previous_guesses)
+        print(prompt)
         guess = self.request(prompt)
         # process response
         print(f"GPT guess: {guess}")
@@ -51,29 +54,28 @@ class ConnectionController(BrowserController):
         ]  # remove brackets, split by commas
         self.submit_group(words)
         print("submitted")
+        # check if game over
+        if self.attempts_left() == 0:
+            return True
         # if correct, flush previous_guesses, else append previous guesses
         if self.check_guess(words):
             self.previous_guesses = []
             self.all_guesses.append(
                 {"words": words, "correct": True, "turn": self.total_turns}
             )
+            print("correct")
         else:
             self.previous_guesses.append(words)
             self.all_guesses.append(
                 {"words": words, "correct": False, "turn": self.total_turns}
             )
+            print("incorrect")
 
         # update new bindings, clear board
         self.word_to_buttons = self._get_word_html_elements()
-        print('updated new bindings')
         time.sleep(2)
-        for word in self.word_to_buttons.values():
-            if "selected" in word.get_attribute("class"):
-                # deselect and update css class
-                self.driver.execute_script(
-                    f"let pointerCancel = new Event('pointercancel'); let wordButton = document.getElementById('{word.get_attribute('id')}'); wordButton.dispatchEvent(pointerCancel); wordButton.class = '{word.get_attribute('class').rstrip(' selected')}'",
-                    word,
-                )
+        print("refreshing state")
+        self.update_bindings()
         self.total_turns += 1
         return False
 
@@ -98,17 +100,37 @@ class ConnectionController(BrowserController):
         for word in words:
             word_button = self.word_to_buttons[word]
             self.driver.execute_script(
-                f"let pointerDown = new Event('pointerdown'); let wordButton = document.getElementById('{word_button.get_attribute('id')}'); wordButton.dispatchEvent(pointerDown); wordButton.class = '{word_button.get_attribute('class')} selected'",
+                f"let pointerDown = new Event('pointerdown'); let wordButton = document.getElementById('{word_button.get_attribute('id')}'); wordButton.dispatchEvent(pointerDown);  wordButton.classList.add('selected')",
                 word_button,
             )
-            time.sleep(1)
-        time.sleep(3)
+            time.sleep(0.25)
         # submit guess; submit is span element -> dispatch pointerdown event
         self.driver.execute_script(
             "let pointerDown = new Event('pointerdown'); let submitButton = document.getElementById('submit-button'); submitButton.dispatchEvent(pointerDown)"
         )
-        time.sleep(3)
+        time.sleep(2)
 
     def check_guess(self, words: List[str]) -> bool:
         correct_groups = self._get_correct_groups()
         return len(set(words) - set(correct_groups)) == 0
+
+    def attempts_left(self) -> int:
+        attempts = self.driver.find_elements(By.CLASS_NAME, "bubble")
+        self.attempts = len(
+            list(
+                filter(
+                    lambda x: "lost" not in x,
+                    [attempt.get_attribute("class") for attempt in attempts],
+                )
+            )
+        )
+        return self.attempts
+
+    def update_bindings(self) -> None:
+        for word in self.word_to_buttons.values():
+            if "selected" in word.get_attribute("class"):
+                # deselect and update css class
+                self.driver.execute_script(
+                    f"let pointerCancel = new Event('pointercancel'); let wordButton = document.getElementById('{word.get_attribute('id')}'); wordButton.dispatchEvent(pointerCancel); wordButton.classList.remove('selected')",
+                    word,
+                )

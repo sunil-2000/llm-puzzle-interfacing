@@ -8,3 +8,9 @@ each row when making new guess <-- (better prompting?) <- need way to easily map
 todo:
 * stronger examples in prompts
 
+- permutation of word ordering impacts gpt4 performance on connections
+
+
+### Examples
+
+![](connections-example.mov)
