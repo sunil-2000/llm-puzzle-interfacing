@@ -55,7 +55,7 @@ class ConnectionController(BrowserController):
         self.submit_group(words)
         print("submitted")
         # check if game over
-        if self.attempts_left() == 0:
+        if self.attempts_left() == 1:
             return True
         # if correct, flush previous_guesses, else append previous guesses
         if self.check_guess(words):
