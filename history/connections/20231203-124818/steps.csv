@@ -1,0 +1,6 @@
+words,correct,turn
+"['LINK', 'HITCH', 'COUPLE', 'TIE']",True,0
+"['SONIC', 'HEARD', 'AUDITORY', 'ACOUSTIC']",True,1
+"['CABLE', 'AMP', 'PUMP', 'ELECTRIC']",False,2
+"['FIRE', 'WATER', 'GAS', 'ELECTRIC']",False,3
+"['WATER', 'FIRE', 'GAS', 'PUMP']",False,4

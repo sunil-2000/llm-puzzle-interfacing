@@ -1,0 +1,6 @@
+words,correct,turn
+"['BALL', 'HEEL', 'ARCH', 'TOE']",False,0
+"['COME', 'STAY', 'SIT', 'DOWN']",True,1
+"['HEEL', 'ARCH', 'TOE', 'SOLE']",False,2
+"['BASS', 'HARP', 'ORGAN', 'HORN']",True,3
+"['BALL', 'HEEL', 'SOLE', 'TOE']",False,4

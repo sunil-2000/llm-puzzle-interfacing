@@ -1,0 +1,4 @@
+words,correct,turn
+"['GOOSE', 'DUCK', 'BIRDS', 'ROBIN']",False,0
+"['CREAM', 'SKIRT', 'STRING', 'ROPE']",False,1
+"['NOTORIOUS', 'WATSON', 'HOBBES', 'REBECCA']",False,2

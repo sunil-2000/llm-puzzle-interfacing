@@ -189,8 +189,9 @@ def connections_prompt(words: List[str], previous_attempts: List[List]) -> str:
     return """
     You are playing the popular game "connections". You will be given a multiple of 4
     words up to 16 words, and your task is to find a grouping of 4 words that share
-    something in common. Previous groupings are previously submitted groupings that are wrong.
-    You can only submit a group with words that are contained in the words array.
+    something in common. The grouping are words that share a common thread. 
+    You can only submit a group with words that are contained in the words array and the group
+    must not be a group in the previous attempts array.
 
     Example 1:
     words: [JOHN, CUB, STAR, SILVER, KNEE, THRONE, JOEY, JELLY, CALF, ANKLE, CRAY, HEAD, SHIN, CAN, KID, THIGH]

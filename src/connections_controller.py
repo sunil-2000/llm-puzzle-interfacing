@@ -42,6 +42,7 @@ class ConnectionController(BrowserController):
         # check if only one grouping left (winner)
         if len(words) == 4:
             self.submit_group(all_words)
+            time.sleep(3)
             return True
 
         prompt = connections_prompt(words, self.previous_guesses)
