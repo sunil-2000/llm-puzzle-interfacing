@@ -1,14 +1,14 @@
+from typing import List
 import time
 import requests
-from src.controller import BrowserController
 from selenium.webdriver.common.by import By
-from src.prompts import connections_prompt
-from src.config import OPENAI_API_KEY
+from src.connections.prompts import prompt_factory
+from src.general.controller import BrowserController
+from src.general.config import OPENAI_API_KEY
+from src.general.error import ApiRequestError
 
-from typing import List
 
-
-class ConnectionController(BrowserController):
+class ConnectionsController(BrowserController):
     def __init__(self) -> None:
         super().__init__("connections")
         self.driver.get("https://www.nytimes.com/games/connections")
@@ -45,7 +45,7 @@ class ConnectionController(BrowserController):
             time.sleep(3)
             return True
 
-        prompt = connections_prompt(words, self.previous_guesses)
+        prompt = prompt_factory(words, self.previous_guesses)
         print(prompt)
         guess = self.request(prompt)
         # process response
@@ -94,20 +94,35 @@ class ConnectionController(BrowserController):
             "https://api.openai.com/v1/chat/completions",
             headers=headers,
             json=payload,
+            timeout=500,
         )
+
+        if "error" in response.json():
+            print(response.json())
+            raise ApiRequestError("Error while making the api request")
+
         return response.json()["choices"][0]["message"]["content"]
 
     def submit_group(self, words: List[str]) -> None:
         for word in words:
             word_button = self.word_to_buttons[word]
             self.driver.execute_script(
-                f"let pointerDown = new Event('pointerdown'); let wordButton = document.getElementById('{word_button.get_attribute('id')}'); wordButton.dispatchEvent(pointerDown);  wordButton.classList.add('selected')",
+                f"""
+                let pointerDown = new Event('pointerdown');
+                let wordButton = document.getElementById('{word_button.get_attribute('id')}');
+                wordButton.dispatchEvent(pointerDown);
+                wordButton.classList.add('selected');
+                """,
                 word_button,
             )
             time.sleep(0.25)
         # submit guess; submit is span element -> dispatch pointerdown event
         self.driver.execute_script(
-            "let pointerDown = new Event('pointerdown'); let submitButton = document.getElementById('submit-button'); submitButton.dispatchEvent(pointerDown)"
+            """
+            let pointerDown = new Event('pointerdown');
+            let submitButton = document.getElementById('submit-button');
+            submitButton.dispatchEvent(pointerDown);
+            """
         )
         time.sleep(2)
 
@@ -132,6 +147,11 @@ class ConnectionController(BrowserController):
             if "selected" in word.get_attribute("class"):
                 # deselect and update css class
                 self.driver.execute_script(
-                    f"let pointerCancel = new Event('pointercancel'); let wordButton = document.getElementById('{word.get_attribute('id')}'); wordButton.dispatchEvent(pointerCancel); wordButton.classList.remove('selected')",
+                    f"""
+                    let pointerCancel = new Event('pointercancel');
+                    let wordButton = document.getElementById('{word.get_attribute('id')}');
+                    wordButton.dispatchEvent(pointerCancel);
+                    wordButton.classList.remove('selected');
+                    """,
                     word,
                 )

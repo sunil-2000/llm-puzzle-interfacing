@@ -1,13 +1,13 @@
 import os
-from selenium.webdriver.common.by import By
 from typing import List, Tuple
+from selenium.webdriver.common.by import By
 
-from src.controller import BrowserController
+from src.general.controller import BrowserController
 
 
 class WordleController(BrowserController):
     def __init__(self) -> None:
-        super.__init__("wordle")
+        super().__init__("wordle")
         self.driver.get("https://www.nytimes.com/games/wordle/index.html")
         self.driver.find_element(By.CLASS_NAME, "Welcome-module_button__ZG0Zh").click()
         self.driver.find_element(By.CLASS_NAME, "Modal-module_closeIcon__TcEKb").click()
@@ -61,10 +61,4 @@ class WordleController(BrowserController):
         """
         check if wordle is over
         """
-        return (
-            True
-            if self.driver.find_elements(
-                By.CLASS_NAME, "Stats-module_statsContainer__g23s0"
-            )
-            else False
-        )
+        return self.driver.find_elements(By.CLASS_NAME, "Stats-module_statsContainer__g23s0")

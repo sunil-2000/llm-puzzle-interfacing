@@ -6,11 +6,11 @@ def encode_image(image_path: str) -> bytes:
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 
-def gpt4_v_wordle_payload(image_path: str, prompt: str, OPENAI_API_KEY: str) -> str:
+def gpt4_v_wordle_payload(image_path: str, prompt: str, openai_api_key: str) -> str:
     encoded_image = encode_image(image_path)
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Authorization": f"Bearer {openai_api_key}",
     }
     payload = {
         "model": "gpt-4-vision-preview",
@@ -31,10 +31,10 @@ def gpt4_v_wordle_payload(image_path: str, prompt: str, OPENAI_API_KEY: str) -> 
     return {"headers": headers, "payload": payload}
 
 
-def gpt4_wordle_payload(prompt: str, OPENAI_API_KEY: str) -> str:
+def gpt4_wordle_payload(prompt: str, openai_api_key: str) -> str:
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Authorization": f"Bearer {openai_api_key}",
     }
     payload = {
         "model": "gpt-4",

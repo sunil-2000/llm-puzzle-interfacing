@@ -1,25 +1,22 @@
 ## wrapper over llm
-import os
 import time
 import requests
-from wordle_controller import WordleController
-from src.util import gpt4_v_wordle_payload, gpt4_wordle_payload
-from src.prompts import wordle_prompt_gpt4_v, wordle_prompt_gpt4
+from src.wordle.controller import WordleController
+from src.wordle.prompts import wordle_prompt_gpt4_v, wordle_prompt_gpt4
+from src.general.util import gpt4_v_wordle_payload, gpt4_wordle_payload
+from src.general.config import OPENAI_API_KEY
 
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-
-class wordleAgent(WordleController):
+class WordleAgent(WordleController):
     """
     wordle-LLM agent
     """
 
     def __init__(self, vision: bool = False) -> None:
+        super().__init__()
         self.vision = vision
         self.board_sequence = []
         self.guesses = []
-        super().__init__()
 
     def turn(self) -> None:
         """
@@ -29,7 +26,6 @@ class wordleAgent(WordleController):
             self.vision_guess()
         else:
             self.guess()
-        pass
 
     def vision_response(self, prompt: str, image_path: str) -> str:
         """
@@ -40,6 +36,7 @@ class wordleAgent(WordleController):
             "https://api.openai.com/v1/chat/completions",
             headers=request["headers"],
             json=request["payload"],
+            timeout=500
         )
         return response.json()["choices"][0]["message"]["content"]
 
@@ -51,9 +48,9 @@ class wordleAgent(WordleController):
         4. repeat until game is over
         """
         print("capturing")
-        self.capture()
-        image_path = f"{self.image_dir}/turn-{self.total_turns-1}.png"
-        guess = list(self.vision_response(wordle_prompt_gpt4_v, image_path).strip())
+        self.capture_screen()
+        image_path = f"{self.data_dir}/turn-{self.total_turns-1}.png"
+        guess = list(self.vision_response(wordle_prompt_gpt4_v(), image_path).strip())
         self._submit_guess(guess)
 
     def response(self, prompt: str) -> str:
@@ -62,6 +59,7 @@ class wordleAgent(WordleController):
             "https://api.openai.com/v1/chat/completions",
             headers=request["headers"],
             json=request["payload"],
+            timeout=500
         )
         print(response.json())
         return response.json()["choices"][0]["message"]["content"]
@@ -93,6 +91,7 @@ class wordleAgent(WordleController):
         """
         submit guess to wordle
         """
-        [self.keyboard(char.lower()) for char in guess]
+        for char in guess:
+            self.keyboard(char.lower())
         self.keyboard("enter")
         print("submitted LLM response")
