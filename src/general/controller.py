@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from selenium import webdriver
-from src.config import selenium_browser_prefs
+from src.general.config import selenium_browser_prefs
 
 
 class BrowserController:

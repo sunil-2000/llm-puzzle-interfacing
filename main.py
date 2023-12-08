@@ -1,12 +1,14 @@
-from src.connections_controller import ConnectionController
-from data_collection.publisher import write_results
+import sys
+from src.connections.play_connections import play_connections
+from src.wordle.play_wordle import play_wordle
 
-cc = ConnectionController()
-state = False 
 
-while not state:
-  state = cc.turn()
+def main():
+    if sys.argv[1].lower() == "connections":
+        play_connections()
+    elif sys.argv[1].lower() == "wordle":
+        play_wordle()
 
-write_results(cc.all_guesses, {"total_turns": cc.total_turns, "attempts_left": cc.attempts, "solved": True if cc.attempts > 1 else False}, "history")
 
-print(f"solved in {cc.total_turns} turns")
+if __name__ == "__main__":
+    main()

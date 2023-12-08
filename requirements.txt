@@ -1,2 +1,4 @@
 selenium
 requests
+black
+pylint
