@@ -27,12 +27,6 @@ class WordleController(BrowserController):
     def keyboard(self, character: str) -> None:
         self.keyboard_map[character].click()
 
-    def capture_screen(self) -> None:
-        self.driver.save_screenshot(
-            os.path.abspath(f"{self.data_dir}/turn-{self.total_turns}.png")
-        )
-        self.total_turns += 1
-
     def get_wordle_board(self) -> List[List[Tuple[str, str]]]:
         """
         extract wordle board from page
