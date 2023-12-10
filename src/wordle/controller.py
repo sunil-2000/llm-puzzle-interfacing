@@ -55,4 +55,6 @@ class WordleController(BrowserController):
         """
         check if wordle is over
         """
-        return self.driver.find_elements(By.CLASS_NAME, "Stats-module_statsContainer__g23s0")
+        return self.driver.find_elements(
+            By.CLASS_NAME, "Stats-module_statsContainer__g23s0"
+        )

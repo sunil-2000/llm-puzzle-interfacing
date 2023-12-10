@@ -46,7 +46,7 @@ class WordleAgent(WordleController):
             "https://api.openai.com/v1/chat/completions",
             headers=request["headers"],
             json=request["payload"],
-            timeout=500
+            timeout=500,
         )
         print(response.json())
         return response.json()["choices"][0]["message"]["content"]

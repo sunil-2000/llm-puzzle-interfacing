@@ -1,5 +1,6 @@
 from typing import List
 
+
 def extract_example(wordle_board, guess="") -> str:
     res = (
         "["
@@ -14,6 +15,7 @@ def extract_example(wordle_board, guess="") -> str:
         res += '"' + guess + '"'
     return res
 
+
 def previous_examples_factory(wordle_boards: List[str], guesses: List[str]) -> str:
     "\n".join(
         [
@@ -21,6 +23,7 @@ def previous_examples_factory(wordle_boards: List[str], guesses: List[str]) -> s
             for wordle_board, guess in zip(wordle_boards[:-1], guesses)
         ]
     )
+
 
 def wordle_prompt_gpt4(wordle_boards: List[str], guesses: List[str]) -> str:
     return f"""
