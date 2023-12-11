@@ -3,6 +3,7 @@ import time
 import requests
 from selenium.webdriver.common.by import By
 from src.connections.prompts import prompt_factory
+from src.connections.selectors import Selector as S
 from src.general.controller import BrowserController
 from src.general.config import OPENAI_API_KEY
 from src.general.error import ApiRequestError
@@ -14,23 +15,27 @@ class ConnectionsController(BrowserController):
     def __init__(self) -> None:
         super().__init__("connections")
         self.driver.get("https://www.nytimes.com/games/connections")
-        self.driver.find_element(By.CLASS_NAME, "pz-moment__button").click()
+        self.driver.find_element(By.CLASS_NAME, S.START_BUTTON.value).click()
         time.sleep(2)  # sleep as next page loading
-        self.driver.find_element(By.ID, "close-help").click()
+        self.driver.find_element(By.ID, S.CLOSE_BUTTON.value).click()
         self.word_to_buttons = self._get_word_html_elements()
         self.all_guesses, self.previous_guesses = [], []
         self.attempts, self.total_turns = 4, 0
 
     def _get_word_html_elements(self) -> List[str]:
         """call after each submission because DOM refreshes each submit"""
-        return {e.text: e for e in self.driver.find_elements(By.CLASS_NAME, "item")}
+        return {
+            e.text: e
+            for e in self.driver.find_elements(By.CLASS_NAME, S.ITEM_CLASS.value)
+        }
 
     def _get_correct_groups(self) -> List[str]:
         """get previously submitted word groups that are correct"""
         correct_groups = []
-        if self.driver.find_elements(By.CLASS_NAME, "correct"):
+        if self.driver.find_elements(By.CLASS_NAME, S.CORRECT_CLASS.value):
             correct_groups = [
-                e.text for e in self.driver.find_elements(By.CLASS_NAME, "correct")
+                e.text
+                for e in self.driver.find_elements(By.CLASS_NAME, S.CORRECT_CLASS.value)
             ]
         return correct_groups
 
@@ -142,7 +147,7 @@ class ConnectionsController(BrowserController):
 
     def attempts_left(self) -> int:
         """return number of connection attempts left"""
-        attempts = self.driver.find_elements(By.CLASS_NAME, "bubble")
+        attempts = self.driver.find_elements(By.CLASS_NAME, S.ATTEMPT_CLASS.value)
         self.attempts = len(
             list(
                 filter(
