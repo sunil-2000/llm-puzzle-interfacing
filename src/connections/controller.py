@@ -1,64 +1,57 @@
-from typing import List
+from typing import List, Tuple
 import time
 import requests
 from selenium.webdriver.common.by import By
 from src.connections.prompts import prompt_factory
+from src.connections.selectors import Selector as S
 from src.general.controller import BrowserController
 from src.general.config import OPENAI_API_KEY
 from src.general.error import ApiRequestError
+from src.general.states import GameState
+from src.general.util import log_args_retval
 
 
 class ConnectionsController(BrowserController):
     def __init__(self) -> None:
         super().__init__("connections")
         self.driver.get("https://www.nytimes.com/games/connections")
-        self.driver.find_element(By.CLASS_NAME, "pz-moment__button").click()
-        time.sleep(2)
-        self.driver.find_element(By.ID, "close-help").click()
+        self.driver.find_element(By.CLASS_NAME, S.START_BUTTON.value).click()
+        time.sleep(2)  # sleep as next page loading
+        self.driver.find_element(By.ID, S.CLOSE_BUTTON.value).click()
         self.word_to_buttons = self._get_word_html_elements()
-        self.all_guesses = []
-        self.previous_guesses = []
-        self.total_turns = 0
-        self.attempts = 4
+        self.all_guesses, self.previous_guesses = [], []
+        self.attempts, self.total_turns = 4, 0
 
     def _get_word_html_elements(self) -> List[str]:
-        # call after each submission because DOM refreshes each submit
-        return {e.text: e for e in self.driver.find_elements(By.CLASS_NAME, "item")}
+        """call after each submission because DOM refreshes each submit"""
+        return {
+            e.text: e
+            for e in self.driver.find_elements(By.CLASS_NAME, S.ITEM_CLASS.value)
+        }
 
     def _get_correct_groups(self) -> List[str]:
+        """get previously submitted word groups that are correct"""
         correct_groups = []
-        if self.driver.find_elements(By.CLASS_NAME, "correct"):
+        if self.driver.find_elements(By.CLASS_NAME, S.CORRECT_CLASS.value):
             correct_groups = [
-                e.text for e in self.driver.find_elements(By.CLASS_NAME, "correct")
+                e.text
+                for e in self.driver.find_elements(By.CLASS_NAME, S.CORRECT_CLASS.value)
             ]
         return correct_groups
 
-    def turn(self) -> bool:
+    def turn(self) -> GameState:
+        """take one turn of connections game"""
         print(f"turn: {self.total_turns}")
+        # check if only one group left
+        if self.check_win():
+            self.submit_group(words)
+            return GameState.GAMEWIN
+        # make and submit guess
+        words = self.llm_input_ouput(
+            prompt_factory(self.word_to_buttons.keys(), self.previous_guesses)
+        )
 
-        all_words = self.word_to_buttons.keys()
-        correct_groups = self._get_correct_groups()
-        words = list(set(all_words) - set(correct_groups))
-        # check if only one grouping left (winner)
-        if len(words) == 4:
-            self.submit_group(all_words)
-            time.sleep(3)
-            return True
-
-        prompt = prompt_factory(words, self.previous_guesses)
-        print(prompt)
-        guess = self.request(prompt)
-        # process response
-        print(f"GPT guess: {guess}")
-        words = [
-            word.strip().upper() for word in guess[1:-1].split(",")
-        ]  # remove brackets, split by commas
-        self.submit_group(words)
-        print("submitted")
-        # check if game over
-        if self.attempts_left() == 1:
-            return True
-        # if correct, flush previous_guesses, else append previous guesses
+        # update game state based on correctness
         if self.check_guess(words):
             self.previous_guesses = []
             self.all_guesses.append(
@@ -72,15 +65,17 @@ class ConnectionsController(BrowserController):
             )
             print("incorrect")
 
+        self.total_turns += 1
         # update new bindings, clear board
         self.word_to_buttons = self._get_word_html_elements()
+        self.deselect_words()
+        if self.attempts_left() == 1:
+            return GameState.GAMEOVER
         time.sleep(2)
-        print("refreshing state")
-        self.update_bindings()
-        self.total_turns += 1
-        return False
+        return GameState.PLAYING
 
     def request(self, prompt: str) -> str:
+        """make request to openai gpt-4"""
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {OPENAI_API_KEY}",
@@ -103,7 +98,19 @@ class ConnectionsController(BrowserController):
 
         return response.json()["choices"][0]["message"]["content"]
 
+    @log_args_retval
+    def llm_input_ouput(self, prompt: str) -> Tuple[str, str]:
+        """
+        serve prompt as input to llm, take llm output and submit to game
+        return original list of word llm guessed
+        """
+        guess = self.request(prompt)
+        words = [word.strip().upper() for word in guess[1:-1].split(",")]
+        self.submit_group(words)
+        return words
+
     def submit_group(self, words: List[str]) -> None:
+        """submit a 4-letter list of words as grouping guess"""
         for word in words:
             word_button = self.word_to_buttons[word]
             self.driver.execute_script(
@@ -127,11 +134,20 @@ class ConnectionsController(BrowserController):
         time.sleep(2)
 
     def check_guess(self, words: List[str]) -> bool:
+        """check if guess is correct"""
         correct_groups = self._get_correct_groups()
         return len(set(words) - set(correct_groups)) == 0
 
+    def check_win(self) -> bool:
+        """check if only on group left, thus game is done (last guess is trivial)"""
+        all_words = self.word_to_buttons.keys()
+        correct_groups = self._get_correct_groups()
+        words = list(set(all_words) - set(correct_groups))
+        return len(words) == 4
+
     def attempts_left(self) -> int:
-        attempts = self.driver.find_elements(By.CLASS_NAME, "bubble")
+        """return number of connection attempts left"""
+        attempts = self.driver.find_elements(By.CLASS_NAME, S.ATTEMPT_CLASS.value)
         self.attempts = len(
             list(
                 filter(
@@ -142,7 +158,8 @@ class ConnectionsController(BrowserController):
         )
         return self.attempts
 
-    def update_bindings(self) -> None:
+    def deselect_words(self) -> None:
+        """deselect previous guesses"""
         for word in self.word_to_buttons.values():
             if "selected" in word.get_attribute("class"):
                 # deselect and update css class

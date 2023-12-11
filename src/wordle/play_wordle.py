@@ -1,6 +1,7 @@
 from src.wordle.agent import WordleAgent
 from src.general.error import error_handler
 
+
 @error_handler
 def play_wordle():
     wc = WordleAgent()
